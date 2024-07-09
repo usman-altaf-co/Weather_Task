@@ -4,12 +4,7 @@ import os
 
 def load_weather_data(file_path, year):
     weather_data = []
-
-    month_abbr = {
-        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,
-        'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8,
-        'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
-    }
+    #day_data = {}
 
     months = ['Jan', 'Feb', 'Mar', 'Apr',
         'May', 'Jun', 'Jul', 'Aug',
@@ -27,12 +22,8 @@ def load_weather_data(file_path, year):
 
             for line in file:
                 line = line.strip()
-                if not line:
-                    continue
 
                 values = line.split(',')
-                if len(values) != 23:
-                    continue
 
                 labels = [
                     'PKT', 'Max TemperatureC', 'Mean TemperatureC',
@@ -45,8 +36,13 @@ def load_weather_data(file_path, year):
                     'Precipitationmm', 'CloudCover', 'Events', 'WindDirDegrees'
                 ]
 
-                # Dictionary
+                #for label, value in zip(labels, values):
+                #    day_data[label] = value
+
+                # Dictionary Comprehension, Creating and Converting tuple into dictionary's key-value pairs
                 day_data = {label: value for label, value in zip(labels, values)}
+                #for i in range(len(labels)):
+                #    day_data[labels[i]] = values[i]
                 weather_data.append(day_data)
 
     return weather_data
