@@ -73,12 +73,10 @@ def calculate_stats(weather_data):
                 highest_humidity_day = day_data['PKT']
 
     return {
-        'Highest': (highest_temp, highest_temp_day), #if highest_temp_day else (None, None),
-        'Lowest': (lowest_temp, lowest_temp_day), #if lowest_temp_day else (None, None),
-        'Humidity': (highest_humidity, highest_humidity_day) #if highest_humidity_day else (None, None)
+        'Highest': (highest_temp, highest_temp_day),
+        'Lowest': (lowest_temp, lowest_temp_day),
+        'Humidity': (highest_humidity, highest_humidity_day)
     }
-
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
