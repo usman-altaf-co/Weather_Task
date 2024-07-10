@@ -2,26 +2,26 @@ import argparse
 import os
 
 months = ['Jan', 'Feb', 'Mar', 'Apr',
-        'May', 'Jun', 'Jul', 'Aug',
-        'Sep', 'Oct', 'Nov', 'Dec']
+          'May', 'Jun', 'Jul', 'Aug',
+          'Sep', 'Oct', 'Nov', 'Dec']
 
 labels = [
-            'PKT', 'Max TemperatureC', 'Mean TemperatureC',
-            'Min TemperatureC', 'Dew PointC', 'MeanDew PointC',
-            'Min DewpointC', 'Max Humidity', 'Mean Humidity',
-            'Min Humidity', 'Max Sea Level PressurehPa',
-            'Mean Sea Level PressurehPa', 'Min Sea Level PressurehPa',
-            'Max VisibilityKm', 'Mean VisibilityKm', 'Min VisibilitykM',
-            'Max Wind SpeedKm/h', 'Mean Wind SpeedKm/h', 'Max Gust SpeedKm/h',
-            'Precipitationmm', 'CloudCover', 'Events', 'WindDirDegrees'
-            ]
+    'PKT', 'Max TemperatureC', 'Mean TemperatureC',
+    'Min TemperatureC', 'Dew PointC', 'MeanDew PointC',
+    'Min DewpointC', 'Max Humidity', 'Mean Humidity',
+    'Min Humidity', 'Max Sea Level PressurehPa',
+    'Mean Sea Level PressurehPa', 'Min Sea Level PressurehPa',
+    'Max VisibilityKm', 'Mean VisibilityKm', 'Min VisibilitykM',
+    'Max Wind SpeedKm/h', 'Mean Wind SpeedKm/h', 'Max Gust SpeedKm/h',
+    'Precipitationmm', 'CloudCover', 'Events', 'WindDirDegrees'
+]
 
 month_abbr = {
-                  1: 'Jan', 2: 'Feb', 3: 'Mar',
-                  4: 'Apr', 5: 'May', 6: 'Jun',
-                  7: 'Jul', 8: 'Aug', 9: 'Sep',
-                  10: 'Oct', 11: 'Nov', 12: 'Dec'
-                }
+    1: 'Jan', 2: 'Feb', 3: 'Mar',
+    4: 'Apr', 5: 'May', 6: 'Jun',
+    7: 'Jul', 8: 'Aug', 9: 'Sep',
+    10: 'Oct', 11: 'Nov', 12: 'Dec'
+}
 
 
 def load_weather_data(file_path, year):
@@ -108,23 +108,19 @@ def calculate_stats(weather_data):
 
 
 def calculate_stats_month(weather_data):
-    highest_temp = float('-inf')
-    lowest_temp = float('inf')
-    highest_humidity = 0
-
     high_temps = []
     low_temps = []
     mean_humidity = []
 
     for day_data in weather_data:
         if day_data['Max TemperatureC']:
-            high_temps.append((int)(day_data['Max TemperatureC']))
+            high_temps.append(int(day_data['Max TemperatureC']))
 
         if day_data['Min TemperatureC']:
-            low_temps.append((int)(day_data['Min TemperatureC']))
+            low_temps.append(int(day_data['Min TemperatureC']))
 
         if day_data['Mean Humidity']:
-            mean_humidity.append((int)(day_data['Mean Humidity']))
+            mean_humidity.append(int(day_data['Mean Humidity']))
 
     avg_high_temp = sum(high_temps) / len(high_temps)
     avg_low_temp = sum(low_temps) / len(low_temps)
@@ -163,9 +159,9 @@ def main():
         low_val = stats['Lowest'][0]
         humid_val = stats['Highest'][0]
 
-        print(f"Highest: {high_val} on {month_abbr[(int)(date_high[1])]} {date_high[2]} ")
-        print(f"Lowest: {low_val} on {month_abbr[(int)(date_low[1])]} {date_low[2]} ")
-        print(f"Humidity: {humid_val}% on {month_abbr[(int)(date_humid[1])]} {date_humid[2]} ")
+        print(f"Highest: {high_val} on {month_abbr[int(date_high[1])]} {date_high[2]} ")
+        print(f"Lowest: {low_val} on {month_abbr[int(date_low[1])]} {date_low[2]} ")
+        print(f"Humidity: {humid_val}% on {month_abbr[int(date_humid[1])]} {date_humid[2]} ")
         print("\n")
 
     if args.a:
@@ -199,12 +195,12 @@ def main():
             max_temp = 0
             min_temp = 0
             if day_data['Max TemperatureC']:
-                max_temp = (int)(day_data['Max TemperatureC'])
-                min_temp = (int)(day_data['Min TemperatureC'])
+                max_temp = int(day_data['Max TemperatureC'])
+                min_temp = int(day_data['Min TemperatureC'])
 
-            for i in range (0, max_temp):
+            for i in range(0, max_temp):
                 max_str.append('+')
-            for i in range (0, min_temp):
+            for i in range(0, min_temp):
                 min_str.append('+')
 
             date = day_data['PKT']
@@ -213,9 +209,9 @@ def main():
             maxString = "".join(max_str)
             minString = "".join(min_str)
 
-            if(max_temp != 0):
-                #print(f"{day} {RED}{maxString}{RESET} {max_temp}C")
-                #print(f"{day} {BLUE}{minString}{RESET} {min_temp}C")
+            if max_temp != 0:
+                # print(f"{day} {RED}{maxString}{RESET} {max_temp}C")
+                # print(f"{day} {BLUE}{minString}{RESET} {min_temp}C")
 
                 # Bonus Task
                 print(f"{day} {BLUE}{minString}{RESET}{RED}{maxString}{RESET} {min_temp}C - {max_temp}C")
