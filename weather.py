@@ -173,7 +173,7 @@ def main():
         month_stats = calculate_stats_month(weather_data_month)
         print(f"Highest Average: {month_stats['avgHighest']:.0f}")
         print(f"Lowest Average: {month_stats['avgLowest']:.0f}")
-        print(f"Average Mean Humidiy: {month_stats['avgMeanHumidity']:.0f}%")
+        print(f"Average Mean Humidity: {month_stats['avgMeanHumidity']:.0f}%")
         print("\n")
 
     if args.c:
@@ -217,5 +217,4 @@ def main():
                 print(f"{day} {BLUE}{minString}{RESET}{RED}{maxString}{RESET} {min_temp}C - {max_temp}C")
 
 
-if __name__ == "__main__":
-    main()
+main()
