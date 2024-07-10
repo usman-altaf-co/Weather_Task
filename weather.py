@@ -1,9 +1,8 @@
 import argparse
 import os
+import calendar
 
-months = ['Jan', 'Feb', 'Mar', 'Apr',
-          'May', 'Jun', 'Jul', 'Aug',
-          'Sep', 'Oct', 'Nov', 'Dec']
+months = list(calendar.month_abbr)[1:]
 
 labels = [
     'PKT', 'Max TemperatureC', 'Mean TemperatureC',
@@ -16,12 +15,7 @@ labels = [
     'Precipitationmm', 'CloudCover', 'Events', 'WindDirDegrees'
 ]
 
-month_abbr = {
-    1: 'Jan', 2: 'Feb', 3: 'Mar',
-    4: 'Apr', 5: 'May', 6: 'Jun',
-    7: 'Jul', 8: 'Aug', 9: 'Sep',
-    10: 'Oct', 11: 'Nov', 12: 'Dec'
-}
+month_abbr = dict(zip(range(1, 13), calendar.month_abbr[1:]))
 
 
 def load_weather_data(file_path, year):
@@ -42,7 +36,6 @@ def load_weather_data(file_path, year):
 
                 values = line.split(',')
 
-                # Dictionary Comprehension, Creating and Converting tuple into dictionary's key-value pairs
                 day_data = {label: value for label, value in zip(labels, values)}
                 weather_data.append(day_data)
 
@@ -68,7 +61,6 @@ def load_weather_data_month(file_path, year, month):
 
             values = line.split(',')
 
-            # Dictionary Comprehension, Creating and Converting tuple into dictionary's key-value pairs
             day_data = {label: value for label, value in zip(labels, values)}
             weather_data_month.append(day_data)
 
@@ -84,21 +76,21 @@ def calculate_stats(weather_data):
     highest_humidity_day = None
 
     for day_data in weather_data:
-        if day_data['Max TemperatureC']:
-            temp = int(day_data['Max TemperatureC'])
+        if day_data["Max TemperatureC"]:
+            temp = int(day_data["Max TemperatureC"])
             if temp > highest_temp:
                 highest_temp = temp
-                highest_temp_day = day_data['PKT']
+                highest_temp_day = day_data["PKT"]
 
             if temp < lowest_temp:
                 lowest_temp = temp
-                lowest_temp_day = day_data['PKT']
+                lowest_temp_day = day_data["PKT"]
 
-        if day_data['Max Humidity']:
-            humidity = int(day_data['Max Humidity'])
+        if day_data["Max Humidity"]:
+            humidity = int(day_data["Max Humidity"])
             if humidity > highest_humidity:
                 highest_humidity = humidity
-                highest_humidity_day = day_data['PKT']
+                highest_humidity_day = day_data["PKT"]
 
     return {
         'Highest': (highest_temp, highest_temp_day),
@@ -113,14 +105,14 @@ def calculate_stats_month(weather_data):
     mean_humidity = []
 
     for day_data in weather_data:
-        if day_data['Max TemperatureC']:
-            high_temps.append(int(day_data['Max TemperatureC']))
+        if day_data["Max TemperatureC"]:
+            high_temps.append(int(day_data["Max TemperatureC"]))
 
         if day_data['Min TemperatureC']:
-            low_temps.append(int(day_data['Min TemperatureC']))
+            low_temps.append(int(day_data["Min TemperatureC"]))
 
         if day_data['Mean Humidity']:
-            mean_humidity.append(int(day_data['Mean Humidity']))
+            mean_humidity.append(int(day_data["Mean Humidity"]))
 
     avg_high_temp = sum(high_temps) / len(high_temps)
     avg_low_temp = sum(low_temps) / len(low_temps)
@@ -151,13 +143,13 @@ def main():
         weather_data = load_weather_data(args.path, year)
         stats = calculate_stats(weather_data)
 
-        date_high = stats['Highest'][1].split('-')
-        date_low = stats['Lowest'][1].split('-')
-        date_humid = stats['Humidity'][1].split('-')
+        date_high = stats["Highest"][1].split('-')
+        date_low = stats["Lowest"][1].split('-')
+        date_humid = stats["Humidity"][1].split('-')
 
-        high_val = stats['Highest'][0]
-        low_val = stats['Lowest'][0]
-        humid_val = stats['Highest'][0]
+        high_val = stats["Highest"][0]
+        low_val = stats["Lowest"][0]
+        humid_val = stats["Highest"][0]
 
         print(f"Highest: {high_val} on {month_abbr[int(date_high[1])]} {date_high[2]} ")
         print(f"Lowest: {low_val} on {month_abbr[int(date_low[1])]} {date_low[2]} ")
@@ -194,9 +186,9 @@ def main():
             min_str = []
             max_temp = 0
             min_temp = 0
-            if day_data['Max TemperatureC']:
-                max_temp = int(day_data['Max TemperatureC'])
-                min_temp = int(day_data['Min TemperatureC'])
+            if day_data["Max TemperatureC"]:
+                max_temp = int(day_data["Max TemperatureC"])
+                min_temp = int(day_data["Min TemperatureC"])
 
             for i in range(0, max_temp):
                 max_str.append('+')
