@@ -1,212 +1,198 @@
 import argparse
 import os
 import calendar
+import csv
 
-months = list(calendar.month_abbr)[1:]
-
-labels = [
-    'PKT', 'Max TemperatureC', 'Mean TemperatureC',
-    'Min TemperatureC', 'Dew PointC', 'MeanDew PointC',
-    'Min DewpointC', 'Max Humidity', 'Mean Humidity',
-    'Min Humidity', 'Max Sea Level PressurehPa',
-    'Mean Sea Level PressurehPa', 'Min Sea Level PressurehPa',
-    'Max VisibilityKm', 'Mean VisibilityKm', 'Min VisibilitykM',
-    'Max Wind SpeedKm/h', 'Mean Wind SpeedKm/h', 'Max Gust SpeedKm/h',
-    'Precipitationmm', 'CloudCover', 'Events', 'WindDirDegrees'
+required_labels = [
+    "PKT", "PKST", "Max TemperatureC", "Min TemperatureC", "Mean Humidity"
 ]
 
-month_abbr = dict(zip(range(1, 13), calendar.month_abbr[1:]))
+month_abbr_map = {index: month for index, month in enumerate(calendar.month_abbr) if month}
 
 
-def load_weather_data(file_path, year):
-    weather_data = []
+def read_weather_file(weather_file_path):
+    murree_weather_month = []
+    if not os.path.isfile(weather_file_path):
+        return murree_weather_month
 
-    for month_abbr in months:
-        file_name = f"Murree_weather_{year}_{month_abbr}.txt"
-        full_path = os.path.join(file_path, file_name)
+    with open(weather_file_path, mode="r") as file:
+        csv_reader = csv.DictReader(file)
+        headers = [header.strip() for header in csv_reader.fieldnames]
+        for row in csv_reader:
+            row = {key.strip(): value for key, value in row.items()}
+            filtered_row = {key: row[key] for key in required_labels if key in headers}
 
-        if not os.path.isfile(full_path):
+            murree_weather_month.append(filtered_row)
+
+    return murree_weather_month
+
+
+def load_yearly_weather_data(directory_path, year):
+    year_weather_data = []
+
+    for month in month_abbr_map.keys():
+        if not month:
             continue
 
-        with open(full_path, mode='r') as file:
-            next(file)
+        monthly_data = load_monthly_weather_data(directory_path, year, month)
+        year_weather_data.extend(monthly_data)
 
-            for line in file:
-                line = line.strip()
-
-                values = line.split(',')
-
-                day_data = {label: value for label, value in zip(labels, values)}
-                weather_data.append(day_data)
-
-    return weather_data
+    return year_weather_data
 
 
-def load_weather_data_month(file_path, year, month):
-    weather_data_month = []
-
-    months = month_abbr
-
-    file_name = f"Murree_weather_{year}_{months[month]}.txt"
-    full_path = os.path.join(file_path, file_name)
-
-    if not os.path.isfile(full_path):
-        print('Year or Months Data does not exist')
-
-    with open(full_path, mode='r') as file:
-        next(file)
-
-        for line in file:
-            line = line.strip()
-
-            values = line.split(',')
-
-            day_data = {label: value for label, value in zip(labels, values)}
-            weather_data_month.append(day_data)
-
-    return weather_data_month
+def load_monthly_weather_data(directory_path, year, month):
+    murree_weather_file = f"Murree_weather_{year}_{month_abbr_map[month]}.txt"
+    full_file_path = os.path.join(directory_path, murree_weather_file)
+    return read_weather_file(full_file_path)
 
 
-def calculate_stats(weather_data):
-    highest_temp = float('-inf')
-    highest_temp_day = None
-    lowest_temp = float('inf')
-    lowest_temp_day = None
+def calculate_yearly_stats(weather_data):
+    highest_temperature = float("-inf")
+    lowest_temperature = float("inf")
     highest_humidity = 0
+
+    highest_temp_day = None
+    lowest_temp_day = None
     highest_humidity_day = None
 
-    for day_data in weather_data:
-        if day_data["Max TemperatureC"]:
-            temp = int(day_data["Max TemperatureC"])
-            if temp > highest_temp:
-                highest_temp = temp
-                highest_temp_day = day_data["PKT"]
+    for daily_data in weather_data:
+        date_key = "PKT" if "PKT" in daily_data else "PKST"
 
-            if temp < lowest_temp:
-                lowest_temp = temp
-                lowest_temp_day = day_data["PKT"]
+        if daily_data["Max TemperatureC"]:
+            max_temp = int(daily_data["Max TemperatureC"])
+            if max_temp > highest_temperature:
+                highest_temperature = max_temp
+                highest_temp_day = daily_data[date_key]
 
-        if day_data["Max Humidity"]:
-            humidity = int(day_data["Max Humidity"])
-            if humidity > highest_humidity:
-                highest_humidity = humidity
-                highest_humidity_day = day_data["PKT"]
+            if max_temp < lowest_temperature:
+                lowest_temperature = max_temp
+                lowest_temp_day = daily_data[date_key]
+
+            if daily_data["Mean Humidity"]:
+                max_humidity = int(daily_data["Mean Humidity"])
+                if max_humidity > highest_humidity:
+                    highest_humidity = max_humidity
+                    highest_humidity_day = daily_data[date_key]
 
     return {
-        'Highest': (highest_temp, highest_temp_day),
-        'Lowest': (lowest_temp, lowest_temp_day),
-        'Humidity': (highest_humidity, highest_humidity_day)
+        "Highest": (highest_temperature, highest_temp_day),
+        "Lowest": (lowest_temperature, lowest_temp_day),
+        "Humidity": (highest_humidity, highest_humidity_day)
     }
 
 
-def calculate_stats_month(weather_data):
-    high_temps = []
-    low_temps = []
-    mean_humidity = []
+def calculate_monthly_stats(weather_data):
+    high_temperatures = []
+    low_temperatures = []
+    mean_humidities = []
 
-    for day_data in weather_data:
-        if day_data["Max TemperatureC"]:
-            high_temps.append(int(day_data["Max TemperatureC"]))
+    for daily_data in weather_data:
+        if daily_data["Max TemperatureC"]:
+            high_temperatures.append(int(daily_data["Max TemperatureC"]))
 
-        if day_data['Min TemperatureC']:
-            low_temps.append(int(day_data["Min TemperatureC"]))
+        if daily_data["Min TemperatureC"]:
+            low_temperatures.append(int(daily_data["Min TemperatureC"]))
 
-        if day_data['Mean Humidity']:
-            mean_humidity.append(int(day_data["Mean Humidity"]))
+        if daily_data["Mean Humidity"]:
+            mean_humidities.append(int(daily_data["Mean Humidity"]))
 
-    avg_high_temp = sum(high_temps) / len(high_temps)
-    avg_low_temp = sum(low_temps) / len(low_temps)
-    avg_mean_humidity = sum(mean_humidity) / len(mean_humidity)
+    avg_high_temp = sum(high_temperatures) / len(high_temperatures)
+    avg_low_temp = sum(low_temperatures) / len(low_temperatures)
+    avg_mean_humidity = sum(mean_humidities) / len(mean_humidities)
 
     return {
-        'avgHighest': avg_high_temp,
-        'avgLowest': avg_low_temp,
-        'avgMeanHumidity': avg_mean_humidity
+        "Average Highest Temperature": avg_high_temp,
+        "Average Lowest Temperature": avg_low_temp,
+        "Average Mean Humidity": avg_mean_humidity
     }
 
 
-def parse_args():
+def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str)
-    parser.add_argument("-e", type=int)
-    parser.add_argument("-a", type=str)
-    parser.add_argument("-c", type=str)
-
+    parser.add_argument("directory", type=str)
+    parser.add_argument("-e", "--year", type=int)
+    parser.add_argument("-a", "--year_month", type=str)
+    parser.add_argument("-c", "--chart", type=str,)
     return parser.parse_args()
 
 
+def print_yearly_stats(stats):
+    high_temp, high_day = stats["Highest"]
+    low_temp, low_day = stats["Lowest"]
+    humid_val, humid_day = stats["Humidity"]
+
+    date_high = high_day.split("-")
+    date_low = low_day.split("-")
+    date_humid = humid_day.split("-")
+
+    print(f"Highest: {high_temp}C on {month_abbr_map[int(date_high[1])]} {date_high[2]}")
+    print(f"Lowest: {low_temp}C on {month_abbr_map[int(date_low[1])]} {date_low[2]}")
+    print(f"Humidity: {humid_val}% on {month_abbr_map[int(date_humid[1])]} {date_humid[2]}")
+    print("\n")
+
+
+def print_monthly_stats(stats):
+    print(f"Highest Average Temperature: {stats["Average Highest Temperature"]:.0f}C")
+    print(f"Lowest Average Temperature: {stats["Average Lowest Temperature"]:.0f}C")
+    print(f"Average Mean Humidity: {stats["Average Mean Humidity"]:.0f}%")
+    print("\n")
+
+
+def display_weather_chart(month, year, weather_data):
+    RED = "\033[31m"
+    BLUE = "\033[34m"
+    RESET = "\033[0m"
+
+    print(month_abbr_map[month], year)
+
+    for day_data in weather_data:
+        max_str = []
+        min_str = []
+        max_temp = 0
+        min_temp = 0
+        if day_data["Max TemperatureC"]:
+            max_temp = int(day_data["Max TemperatureC"])
+            min_temp = int(day_data["Min TemperatureC"])
+
+        for i in range(0, max_temp):
+            max_str.append("+")
+        for i in range(0, min_temp):
+            min_str.append("+")
+
+        if "PKT" in day_data:
+            day = day_data["PKT"].split("-")[2]
+        else:
+            day = day_data["PKST"].split("-")[2]
+
+        maxString = "".join(max_str)
+        minString = "".join(min_str)
+
+        if max_temp != 0:
+            # print(f"{day} {RED}{maxString}{RESET} {max_temp}C")
+            # print(f"{day} {BLUE}{minString}{RESET} {min_temp}C")
+
+            # Bonus Task
+            print(f"{day} {BLUE}{minString}{RESET}{RED}{maxString}{RESET} {min_temp}C - {max_temp}C")
+
+
 def main():
-    args = parse_args()
+    args = parse_arguments()
 
-    if args.e:
-        year = args.e
-        weather_data = load_weather_data(args.path, year)
-        stats = calculate_stats(weather_data)
+    if args.year:
+        yearly_weather_data = load_yearly_weather_data(args.directory, args.year)
+        yearly_stats = calculate_yearly_stats(yearly_weather_data)
+        print_yearly_stats(yearly_stats)
 
-        date_high = stats["Highest"][1].split('-')
-        date_low = stats["Lowest"][1].split('-')
-        date_humid = stats["Humidity"][1].split('-')
+    if args.year_month:
+        year, month = map(int, args.year_month.split("/"))
+        monthly_weather_data = load_monthly_weather_data(args.directory, year, month)
+        monthly_stats = calculate_monthly_stats(monthly_weather_data)
+        print_monthly_stats(monthly_stats)
 
-        high_val = stats["Highest"][0]
-        low_val = stats["Lowest"][0]
-        humid_val = stats["Highest"][0]
-
-        print(f"Highest: {high_val} on {month_abbr[int(date_high[1])]} {date_high[2]} ")
-        print(f"Lowest: {low_val} on {month_abbr[int(date_low[1])]} {date_low[2]} ")
-        print(f"Humidity: {humid_val}% on {month_abbr[int(date_humid[1])]} {date_humid[2]} ")
-        print("\n")
-
-    if args.a:
-        year_str, month_str = args.a.split('/')
-        year = int(year_str)
-        month = int(month_str)
-
-        weather_data_month = load_weather_data_month(args.path, year, month)
-        month_stats = calculate_stats_month(weather_data_month)
-        print(f"Highest Average: {month_stats['avgHighest']:.0f}")
-        print(f"Lowest Average: {month_stats['avgLowest']:.0f}")
-        print(f"Average Mean Humidity: {month_stats['avgMeanHumidity']:.0f}%")
-        print("\n")
-
-    if args.c:
-        year_str, month_str = args.c.split('/')
-        year = int(year_str)
-        month = int(month_str)
-
-        weather_data_month = load_weather_data_month(args.path, year, month)
-
-        RED = "\033[31m"
-        BLUE = "\033[34m"
-        RESET = "\033[0m"
-
-        print(month_abbr[month], year)
-
-        for day_data in weather_data_month:
-            max_str = []
-            min_str = []
-            max_temp = 0
-            min_temp = 0
-            if day_data["Max TemperatureC"]:
-                max_temp = int(day_data["Max TemperatureC"])
-                min_temp = int(day_data["Min TemperatureC"])
-
-            for i in range(0, max_temp):
-                max_str.append('+')
-            for i in range(0, min_temp):
-                min_str.append('+')
-
-            date = day_data['PKT']
-            date_list = date.split('-')
-            day = date_list[2]
-            maxString = "".join(max_str)
-            minString = "".join(min_str)
-
-            if max_temp != 0:
-                # print(f"{day} {RED}{maxString}{RESET} {max_temp}C")
-                # print(f"{day} {BLUE}{minString}{RESET} {min_temp}C")
-
-                # Bonus Task
-                print(f"{day} {BLUE}{minString}{RESET}{RED}{maxString}{RESET} {min_temp}C - {max_temp}C")
+    if args.chart:
+        year, month = map(int, args.chart.split("/"))
+        monthly_weather_data = load_monthly_weather_data(args.directory, year, month)
+        display_weather_chart(month, year, monthly_weather_data)
 
 
 main()
