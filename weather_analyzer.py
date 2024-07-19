@@ -1,41 +1,51 @@
+year_weather_readings = None
+
+
 class WeatherDataAnalyzer:
     @staticmethod
-    def calculate_extremes(year_weather_data, key, comparison):
+    def set_year_weather_readings(loaded_year_weather_readings):
+        global year_weather_readings
+        year_weather_readings = loaded_year_weather_readings
+
+    @staticmethod
+    def calculate_extreme_weather_values(weather_attribute):
         """
-        Helper function to calculate extremes for a specific key (Weather Parameter).
+        Helper function to calculate extremes for a specific weather_attribute (Weather Parameter).
 
         Args:
-        - year_weather_data (str): List having whole year's weather data.
-        - key (str): Key representing the weather parameter ("Max TemperatureC",
+        - weather_attribute (str): weather_attribute representing the weather parameter ("Max TemperatureC",
           "Min TemperatureC", or "Mean Humidity").
-        - comparison (function): Comparison function (e.g., lambda x, y: x > y) to
           determine whether a value is an extreme.
 
         Returns:
         - tuple: Tuple containing the extreme value and the corresponding day.
         """
-        if key == "Max TemperatureC":
-            extreme_value = float("-inf")
-        elif key == "Min TemperatureC":
-            extreme_value = float("inf")
+        weather_attribute_values = [
+            int(weather_record[weather_attribute])
+            for weather_record in year_weather_readings
+            if weather_record[weather_attribute]
+        ]
+
+        if weather_attribute == "Max TemperatureC" or weather_attribute == "Mean Humidity":
+            extreme_weather_value = max(weather_attribute_values)
+        elif weather_attribute == "Min TemperatureC":
+            extreme_weather_value = min(weather_attribute_values)
         else:
-            extreme_value = 0
+            raise ValueError(f"Unknown weather attribute: {weather_attribute}")
 
-        extreme_day = None
+        extreme_weather_day = None
 
-        for daily_weather_record in year_weather_data:
-            if daily_weather_record[key]:
-                current_value = int(daily_weather_record[key])
-                if comparison(current_value, extreme_value):
-                    extreme_value = current_value
-                    extreme_day = daily_weather_record.get(
+        for daily_weather_record in year_weather_readings:
+            if daily_weather_record[weather_attribute]:
+                if int(daily_weather_record[weather_attribute]) == extreme_weather_value:
+                    extreme_weather_day = daily_weather_record.get(
                         "PKT", daily_weather_record.get("PKST")
                     )
 
-        return extreme_value, extreme_day
+        return extreme_weather_value, extreme_weather_day
 
     @staticmethod
-    def calculate_year_extremes(year_weather_data):
+    def calculate_year_weather_extremes():
         """
         Calculates yearly extremes for maximum temperature, minimum temperature, and
         mean humidity based on the provided weather data.
@@ -46,22 +56,19 @@ class WeatherDataAnalyzer:
 
         Returns:
         - dict: Dictionary containing the calculated extremes.
-          Keys: "Highest", "Lowest", "Humidity".
+          weather_attributes: "Highest", "Lowest", "Humidity".
           Values: Tuples (extreme_value, extreme_day) for each category.
         """
-        (highest_temperature,
-         highest_temperature_day) = WeatherDataAnalyzer.calculate_extremes(
-            year_weather_data, "Max TemperatureC", lambda x, y: x > y
+        (highest_temperature, highest_temperature_day) = WeatherDataAnalyzer.calculate_extreme_weather_values(
+            "Max TemperatureC",
         )
 
-        (lowest_temperature,
-         lowest_temperature_day) = WeatherDataAnalyzer.calculate_extremes(
-            year_weather_data, "Min TemperatureC", lambda x, y: x < y
+        (lowest_temperature, lowest_temperature_day) = WeatherDataAnalyzer.calculate_extreme_weather_values(
+            "Min TemperatureC",
         )
 
-        (highest_humidity,
-         highest_humidity_day) = WeatherDataAnalyzer.calculate_extremes(
-            year_weather_data, "Mean Humidity", lambda x, y: x > y
+        (highest_humidity, highest_humidity_day) = WeatherDataAnalyzer.calculate_extreme_weather_values(
+            "Mean Humidity",
         )
 
         return {
@@ -71,29 +78,29 @@ class WeatherDataAnalyzer:
         }
 
     @staticmethod
-    def calculate_average(month_weather_data, key):
+    def calculate_average(month_weather_readings, weather_attribute):
         """
         Helper function to calculate the average value for a specific weather parameter.
 
         Args:
         - month_weather_data (List): List of dictionaries containing whole month's weather records.
-        - key (str): Key representing the weather parameter ("Max TemperatureC",
+        - weather_attribute (str): weather_attribute representing the weather parameter ("Max TemperatureC",
           "Min TemperatureC", or "Mean Humidity").
 
         Returns:
-        - float: Average value of the specified key across all days with available data.
+        - float: Average value of the specified weather_attribute across all days with available readings.
         """
         values = [
-            int(daily_weather_record[key])
+            int(daily_weather_record[weather_attribute])
             for daily_weather_record
-            in month_weather_data
-            if daily_weather_record.get(key)
+            in month_weather_readings
+            if daily_weather_record.get(weather_attribute)
         ]
 
         return int(sum(values) / len(values))
 
     @staticmethod
-    def calculate_month_averages(month_weather_data):
+    def calculate_month_averages(month_weather_readings):
         """
         Calculates monthly averages for highest temperature, lowest temperature, and
         mean humidity based on the provided month's weather data.
@@ -104,17 +111,17 @@ class WeatherDataAnalyzer:
 
         Returns:
         - dict: Dictionary containing the calculated averages.
-          Keys: "Average Highest Temperature", "Average Lowest Temperature", "Average Mean Humidity".
+          weather_attributes: "Average Highest Temperature", "Average Lowest Temperature", "Average Mean Humidity".
         """
-        avg_high_temperature = (WeatherDataAnalyzer.calculate_average
-                                (month_weather_data, "Max TemperatureC"))
-        avg_low_temperature = (WeatherDataAnalyzer.calculate_average
-                               (month_weather_data, "Min TemperatureC"))
-        avg_mean_humidity = (WeatherDataAnalyzer.calculate_average
-                             (month_weather_data, "Mean Humidity"))
+        average_high_temperature = (WeatherDataAnalyzer.calculate_average
+                                    (month_weather_readings, "Max TemperatureC"))
+        average_low_temperature = (WeatherDataAnalyzer.calculate_average
+                                   (month_weather_readings, "Min TemperatureC"))
+        average_mean_humidity = (WeatherDataAnalyzer.calculate_average
+                                 (month_weather_readings, "Mean Humidity"))
 
         return {
-            "Average Highest Temperature": avg_high_temperature,
-            "Average Lowest Temperature": avg_low_temperature,
-            "Average Mean Humidity": avg_mean_humidity
+            "Average Highest Temperature": average_high_temperature,
+            "Average Lowest Temperature": average_low_temperature,
+            "Average Mean Humidity": average_mean_humidity
         }

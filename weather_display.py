@@ -3,7 +3,7 @@ import calendar
 
 class WeatherDataPresenter:
     @staticmethod
-    def show_year_extremes(weather_extremes):
+    def display_year_weather_extremes(weather_extremes):
         """
         Print yearly extremes for maximum temperature, minimum temperature, and
         mean humidity.
@@ -51,7 +51,7 @@ class WeatherDataPresenter:
         )
 
     @staticmethod
-    def show_month_averages(month_weather_averages):
+    def display_month_averages(month_weather_averages):
         """
         Print monthly averages for highest temperature, lowest temperature, and
         mean humidity.
@@ -63,15 +63,15 @@ class WeatherDataPresenter:
         """
         print(
             f"Highest Average Temperature: "
-            f"{month_weather_averages['Average Highest Temperature']}C"
+            f"{month_weather_averages["Average Highest Temperature"]}C"
         )
         print(
             f"Lowest Average Temperature: "
-            f"{month_weather_averages['Average Lowest Temperature']}C"
+            f"{month_weather_averages["Average Lowest Temperature"]}C"
         )
         print(
             f"Average Mean Humidity: "
-            f"{month_weather_averages['Average Mean Humidity']}%"
+            f"{month_weather_averages["Average Mean Humidity"]}%"
         )
 
     @staticmethod
@@ -100,7 +100,7 @@ class WeatherDataPresenter:
         )
 
     @staticmethod
-    def display_weather_chart(month, year, month_weather_data):
+    def display_weather_chart(month_year_values, month_weather_data):
         """
         Display a weather chart for a given month's weather data, showing
         temperature bars for each day.
@@ -111,6 +111,8 @@ class WeatherDataPresenter:
         - month_weather_data (list): List of dictionaries where each dictionary
           represents daily weather records for the specified month.
         """
+        year, month = map(int, month_year_values.split("/"))
+
         RED = "\033[31m"
         BLUE = "\033[34m"
         RESET = "\033[0m"
@@ -120,11 +122,11 @@ class WeatherDataPresenter:
             (max_temperature_bar,
              min_temperature_bar,
              max_temperature,
-             min_temperature) = (WeatherDataPresenter.
-                                 create_temperature_bars(daily_weather_record))
-            day = daily_weather_record.get("PKT",
-                                           daily_weather_record.get("PKST")).split("-")[2]
+             min_temperature) = (WeatherDataPresenter.create_temperature_bars(daily_weather_record))
 
-            print(f"{day} {BLUE}{min_temperature_bar}{RESET}"
+            weather_reading_day = daily_weather_record.get("PKT", daily_weather_record.get("PKST"))
+            weather_reading_day = weather_reading_day.split("-")[2]
+
+            print(f"{weather_reading_day} {BLUE}{min_temperature_bar}{RESET}"
                   f"{RED}{max_temperature_bar}{RESET}"
                   f" {min_temperature}C - {max_temperature}C")

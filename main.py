@@ -1,8 +1,8 @@
-from weather_processor import WeatherDataHandler
+from weather_data_processor import WeatherDataProcessor
 
 
 def main():
-    weather_data_processor = WeatherDataHandler()
+    weather_data_processor = WeatherDataProcessor()
     weather_data_processor.process_weather_data()
 
 
