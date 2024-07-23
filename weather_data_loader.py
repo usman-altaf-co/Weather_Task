@@ -30,9 +30,7 @@ class WeatherDataLoader:
         """
         murree_weather_file = f"Murree_weather_{year}_{month_abbr}.txt"
 
-        weather_data_file_path = os.path.join(
-            self.weather_files_directory, murree_weather_file
-        )
+        weather_data_file_path = os.path.join(self.weather_files_directory, murree_weather_file)
 
         month_weather_readings = []
 

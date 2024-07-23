@@ -13,26 +13,21 @@ class WeatherDataPresenter:
           Keys: "Highest", "Lowest", "Humidity".
           Values: Tuples (extreme_value, extreme_day) for each category.
         """
-        (highest_temperature,
-         highest_temperature_day) = weather_extremes["Highest"]
+        (highest_temperature, highest_temperature_date) = weather_extremes["Highest"]
+        (lowest_temperature, lowest_temperature_date) = weather_extremes["Lowest"]
+        (max_humidity_value, most_humid_date) = weather_extremes["Humidity"]
 
-        (lowest_temperature,
-         lowest_temperature_day) = weather_extremes["Lowest"]
+        (highest_temperature_year,
+         highest_temperature_month,
+         highest_temperature_day) = highest_temperature_date.split("-")
 
-        (max_humidity_value,
-         most_humid_day) = weather_extremes["Humidity"]
+        (lowest_temperature_year,
+         lowest_temperature_month,
+         lowest_temperature_day) = lowest_temperature_date.split("-")
 
-        highest_temperature_day = highest_temperature_day.split("-")
-        lowest_temperature_day = lowest_temperature_day.split("-")
-        most_humid_day = most_humid_day.split("-")
-
-        highest_temperature_month = highest_temperature_day[1]
-        lowest_temperature_month = lowest_temperature_day[1]
-        most_humid_month = most_humid_day[1]
-
-        highest_temperature_day = highest_temperature_day[2]
-        lowest_temperature_day = lowest_temperature_day[2]
-        most_humid_day = most_humid_day[2]
+        (most_humid_year,
+         most_humid_month,
+         most_humid_day) = most_humid_date.split("-")
 
         print(
             f"Highest: {highest_temperature}C on "
@@ -124,8 +119,11 @@ class WeatherDataPresenter:
              max_temperature,
              min_temperature) = (WeatherDataPresenter.create_temperature_bars(daily_weather_record))
 
-            weather_reading_day = daily_weather_record.get("PKT", daily_weather_record.get("PKST"))
-            weather_reading_day = weather_reading_day.split("-")[2]
+            weather_reading_date = daily_weather_record.get("PKT", daily_weather_record.get("PKST"))
+
+            (weather_reading_year,
+             weather_reading_month,
+             weather_reading_day) = weather_reading_date.split("-")
 
             print(f"{weather_reading_day} {BLUE}{min_temperature_bar}{RESET}"
                   f"{RED}{max_temperature_bar}{RESET}"
